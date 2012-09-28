@@ -2,6 +2,10 @@
     simplerobotparser.py
 
     A simple(r) robots.txt parser.
+    It implements Crawl-Delay and Request-Rate directives, and you can easily
+    expand it to do more. If you are interested, look for the comment:
+    "special functions -- you may want to extend this part"
+    
     See example of usage at the end.
 
     This implementation follow the guidelines of 
