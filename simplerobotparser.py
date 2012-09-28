@@ -25,6 +25,10 @@
     ***
     
 """
+# TODO: proper documentation
+# TODO: check meta tags of html 
+# TODO: add implementation of SiteMap directive.
+# http://en.wikipedia.org/wiki/Robots.txt#Sitemap 
 import re
 import urllib
 
@@ -145,8 +149,7 @@ class RobotFileParser:
                 return float(r)/float(s)
             except ValueError:
                 raise ParseError('Invalid value for Request-rate for ' + agent)
-    # TODO: add implementation of SiteMap directive.
-    # http://en.wikipedia.org/wiki/Robots.txt#Sitemap                
+               
 class UserAgent:
     
     def __init__(self,name):
