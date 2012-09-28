@@ -1,0 +1,164 @@
+""" simplerobotparser.py
+
+    Copyright (C) 2012 Balint Vekerdy
+    
+    Partially based on Bastian Kleineidam's robotparser.py
+
+    You can choose between two licenses when using this package:
+    1) GNU GPLv2
+    2) PSF license for Python 2.2
+
+    Following the guidelines of 
+    http://www.w3.org/TR/html4/appendix/notes.html#h-B.4.1.1
+    http://www.robotstxt.org/
+    http://en.wikipedia.org/wiki/Robots.txt
+    and more.
+"""
+import re
+import urllib
+
+__all__ = ['RobotFileParser']
+class RobotFileParser:
+    """
+    A ParseError will be raised in every case when a badly formed robots.txt 
+    file causes the algorithms of RobotFileParser to fail.
+    """
+            
+    def __init__(self):
+        self.useragents = {}
+        
+    def __str__(self):
+        return '\n\n'.join([str(ua) for ua in self.useragents])
+    
+    def fetchUrl(self, url):
+        opener = urllib.FancyURLopener()
+        self.robotfile = opener.open(url)
+
+    def fetchLocal(self, filename):
+        """ 
+        Opens @filename.
+        """
+        self.robotfile = open(filename)
+
+    def parse(self):
+        """
+        Parses a robots.txt file 
+        Must call fetchLocal or fetchUrl first
+        """
+        ua = None
+        for line in self.robotfile.read().split('\n'):
+            if line.strip():
+                data = line.split(':')
+                if len(data) != 2:
+                    raise ParseError('Unexpected data format')
+                lineType = data[0].strip().lower()
+                lineContent = data[1].strip()
+                
+                if lineType == "user-agent":
+                    try:
+                        ua = self.useragents[lineContent]
+                    except KeyError:
+                        #if the user agent mentioned for the first time, add it
+                        self.useragents[lineContent] = UserAgent(lineContent)
+                        ua = self.useragents[lineContent]
+                else:
+                    if ua is None:
+                        raise ParseError("Rule precedes User-Agent definition")
+                    ua.rules.append((lineType,lineContent))                    
+    
+    def getUserAgents(self):
+        return [ua.name for ua in self.useragents.values()]
+    
+    def getProperty(self, agent, lineType):
+        """ 
+        Returns all of @agent's @lineType rules
+        e.g.:
+        getProperty('*','disallow') returns something like:
+        ['/secret', '/dontlikerobots']
+        
+        Return values: 
+        List of the rule's contents or None if the user agent is not present
+        """ 
+        try: 
+            return [v for (k,v) in self.useragents[agent].rules \
+                    if k == lineType.lower()]
+        except KeyError:
+            return None
+    
+    def isAllowed(self, agent, url):
+        if agent not in self.getUserAgents():
+            if agent != '*':
+                return self.isAllowed('*',url)
+            else:
+                # if there are no rules for this User-agent and no rules for
+                # '*', then we are allowed to crawl
+                return True
+        
+        
+        disallow = self.getProperty(agent, 'disallow')
+        allow = self.getProperty(agent, 'allow')
+        for a in allow:
+            if re.match(a,url):
+                return True
+        for d in disallow:
+            if re.match(d,url):
+                return False
+        return True
+    
+    """ special functions -- you may want to extend this part """
+       
+    def getCrawlDelay(self,agent):
+        """
+        Returns the Craw-Delay for @agent in seconds (int), 
+        or None if not defined
+        """
+        cd = self.getProperty(agent,'crawl-delay')
+        if cd is None or len(cd) == 0:
+            return None
+        else:
+            # disregard any but the first occurance
+            return int(cd[0])
+        
+    def getRequestRate(self,agent):
+        """
+        Returns the Request-rate for @agent in request/seconds (float), 
+        or None if not defined
+        """
+        rr = self.getProperty(agent,'request-rate')
+        if rr is None or len(rr) == 0:
+            return None
+        else:
+            # disregard any but the first occurance
+            try:
+                (r,s) = rr[0].split('/')
+                return float(r)/float(s)
+            except ValueError:
+                raise ParseError('Invalid value for Request-rate for ' + agent)
+    # TODO: add implementation of SiteMap directive.
+    # http://en.wikipedia.org/wiki/Robots.txt#Sitemap                
+class UserAgent:
+    
+    def __init__(self,name):
+        self.name = name
+        self.rules = []
+
+    def __str__(self):
+        return self.name + '\n' + '\n'.join([str(r[0]) + ': ' + str(r[1]) \
+                                   for r in self.rules])
+
+
+class ParseError(Exception):
+
+    def __init__(self, msg):
+        self.msg = msg
+
+
+if __name__ == "__main__":
+    r = RobotFileParser()
+    r.fetchLocal('robots.txt')
+    r.parse() 
+    print r.getCrawlDelay('TTS')
+    print r.getRequestRate('TTS')
+    print r.isAllowed('TTS','/tts/A1/0253151/files/')
+    
+        
