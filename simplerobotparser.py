@@ -1,18 +1,25 @@
-""" simplerobotparser.py
+""" 
+    simplerobotparser.py
 
-    Copyright (C) 2012 Balint Vekerdy
-    
-    Partially based on Bastian Kleineidam's robotparser.py
+    A simple(r) robots.txt parser.
+    See example of usage at the end.
 
-    You can choose between two licenses when using this package:
-    1) GNU GPLv2
-    2) PSF license for Python 2.2
-
-    Following the guidelines of 
+    This implementation follow the guidelines of 
     http://www.w3.org/TR/html4/appendix/notes.html#h-B.4.1.1
     http://www.robotstxt.org/
     http://en.wikipedia.org/wiki/Robots.txt
     and more.
+
+    ***
+    This work is licensed under the Creative Commons 
+    Attribution-NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
+    this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/.
+    
+    You can share, copy, distribute, modify this script as long as you attribute
+    the work to Balint Vekerdy, you do not use it for commercial purposes, 
+    and you make it available for others under the same conditions.
+    ***
+    
 """
 import re
 import urllib
@@ -157,8 +164,9 @@ if __name__ == "__main__":
     r = RobotFileParser()
     r.fetchLocal('robots.txt')
     r.parse() 
-    print r.getCrawlDelay('TTS')
-    print r.getRequestRate('TTS')
-    print r.isAllowed('TTS','/tts/A1/0253151/files/')
+    agent = '*'
+    print r.isAllowed(agent,'/path/to/test/')
+    print r.getCrawlDelay(agent)
+    print r.getRequestRate(agent)
     
         
