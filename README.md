@@ -15,12 +15,9 @@ http://en.wikipedia.org/wiki/Robots.txt
 and more.
 
 ***
-This work is licensed under the Creative Commons 
-Attribution-NonCommercial-ShareAlike 3.0 Unported License. To view a copy of
-this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/.
-
-You can share, copy, distribute, modify this script as long as you attribute
-the work to Balint Vekerdy, you do not use it for commercial purposes, 
-and you make it available for others under the same conditions.
+Author: Balint Vekredy
+This work is licensed under the GNU GPLv3 license.
+For details please see:
+http://www.gnu.org/licenses/quick-guide-gplv3.html
 ***
     

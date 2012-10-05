@@ -15,6 +15,7 @@
     and more.
 
     ***
+    Author: Balint Vekredy
     This work is licensed under the GNU GPLv3 license.
     For details please see:
     http://www.gnu.org/licenses/quick-guide-gplv3.html
@@ -25,7 +26,6 @@
 # TODO: check meta tags of html 
 # TODO: add implementation of SiteMap directive.
 # http://en.wikipedia.org/wiki/Robots.txt#Sitemap 
-import re
 import urllib
 
 __all__ = ['RobotFileParser']
@@ -105,10 +105,8 @@ class RobotFileParser:
                 # if there are no rules for this User-agent and no rules for
                 # '*', then we are allowed to crawl
                 return True
-        
-        disallow = [1 for d in self.getProperty(agent, 'disallow') if d.startswith(url)]
-        allow = [1 for a in self.getProperty(agent, 'allow') if a.startswith(url)]
-        
+        disallow = [1 for d in self.getProperty(agent, 'disallow') if url.startswith(d)]
+        allow = [1 for a in self.getProperty(agent, 'allow') if url.startswith(a)]
         if (len(allow)):
             return True
         elif (len(disallow)):
@@ -167,6 +165,6 @@ if __name__ == "__main__":
     r.fetchLocal('robots.txt')
     r.parse() 
     agent = '*'
-    print r.isAllowed(agent,'/path/to/test/')
+    print r.isAllowed(agent,'/path/of/interest')
     print r.getCrawlDelay(agent)
     print r.getRequestRate(agent)
