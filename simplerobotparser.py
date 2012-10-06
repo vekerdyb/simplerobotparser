@@ -58,13 +58,16 @@ class RobotFileParser:
         """
         ua = None
         for line in self.robotfile.read().split('\n'):
+            if line.find('#') > -1:
+                line = line[:line.find('#')]
             if line.strip():
                 data = line.split(':')
                 if len(data) != 2:
                     raise ParseError('Unexpected data format of robots.txt')
+                
                 lineType = data[0].strip().lower()
                 lineContent = data[1].strip()
-                
+
                 if lineType == "user-agent":
                     try:
                         ua = self.useragents[lineContent]
@@ -174,21 +177,27 @@ class RobotExclusion:
     def __init__(self, robotsUrl, agent):
         self.url = robotsUrl
         self.agent = agent
-        self.__parseRobot()
+        if not self.__parseRobot():
+            return False
         
     def __parseRobot(self):
         self.rp = RobotFileParser()
-        self.rp.fetchUrl(self.url)
+        try:
+            self.rp.fetchUrl(self.url)
+        except IOError:
+            return False
         self.rp.parse()
         self.crawldelay = self.rp.getCrawlDelay(self.agent)
         self.requestrate = self.rp.getRequestRate(self.agent)
+        return True
     
     def isAllowed(self,url):
         return self.rp.isAllowed(self.agent, url) 
     
 if __name__ == "__main__":
     r = RobotFileParser()
-    r.fetchLocal('robots.txt')
+    #r.fetchLocal('robots.txt')
+    r.fetchUrl('https://www.youtube.com/robots.txt')
     r.parse() 
     agent = '*'
     print r.isAllowed(agent,'/path/of/interest')
