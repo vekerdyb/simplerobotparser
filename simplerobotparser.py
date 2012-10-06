@@ -28,7 +28,7 @@
 # http://en.wikipedia.org/wiki/Robots.txt#Sitemap 
 import urllib
 
-__all__ = ['RobotFileParser']
+__all__ = ['RobotFileParser', '']
 class RobotFileParser:
     """
     A ParseError will be raised in every case when a badly formed robots.txt 
@@ -159,7 +159,33 @@ class ParseError(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-
+class RobotExclusion:
+    """
+    This class wraps the RobotFileParser class
+    
+    Usage:
+    r = RobotExclusion(url,agent) #create instance, parses url, sets agent
+    r.isAllowed(url)              #checks whether the agent is allowed on that
+                                  #url
+    r.crawldelay                  #crawl-delay value for agent. Default: None
+    r.requestrate                 #request-rate value for agent. Default: None
+    
+    """
+    def __init__(self, robotsUrl, agent):
+        self.url = robotsUrl
+        self.agent = agent
+        self.__parseRobot()
+        
+    def __parseRobot(self):
+        self.rp = RobotFileParser()
+        self.rp.fetchUrl(self.url)
+        self.rp.parse()
+        self.crawldelay = self.rp.getCrawlDelay(self.agent)
+        self.requestrate = self.rp.getRequestRate(self.agent)
+    
+    def isAllowed(self,url):
+        return self.rp.isAllowed(self.agent, url) 
+    
 if __name__ == "__main__":
     r = RobotFileParser()
     r.fetchLocal('robots.txt')
